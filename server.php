@@ -549,6 +549,7 @@ namespace PicoDAV
 		public function error(WebDAV_Exception $e)
 		{
 			if ($e->getCode() == 403 && !$this->storage->auth() && count($this->storage->users)) {
+				$this->requireAuth();
 				return;
 			}
 
