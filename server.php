@@ -520,6 +520,10 @@ namespace PicoDAV
 	{
 		protected function html_directory(string $uri, iterable $list): ?string
 		{
+			if (!ANONYMOUS_LISTINGS && !$this->storage->auth()) {
+				throw new WebDAV_Exception('Directory listing is not allowed', 403);
+			}
+
 			$out = parent::html_directory($uri, $list);
 
 			if (null !== $out) {
@@ -527,6 +531,25 @@ namespace PicoDAV
 			}
 
 			return $out;
+		}
+
+		public function http_get(string $uri): ?string
+		{
+			if (!ANONYMOUS_LISTINGS && !$this->storage->auth()) {
+				$props = [];
+				$this->http_head($uri, $props);
+
+				$is_collection = !empty($props['DAV::resourcetype']) && $props['DAV::resourcetype'] == 'collection';
+
+				if ($is_collection) {
+					http_response_code(403);
+					header('Content-Type: text/html; charset=utf-8', true);
+					echo '<h1>403 Forbidden</h1><p>Directory listing is not allowed.</p>';
+					exit;
+				}
+			}
+
+			return parent::http_get($uri);
 		}
 
 		public function route(?string $uri = null): bool
@@ -537,6 +560,19 @@ namespace PicoDAV
 			}
 
 			return parent::route($uri);
+		}
+
+		public function http_propfind(string $uri): ?string
+		{
+			if (!ANONYMOUS_LISTINGS && !$this->storage->auth()) {
+				$depth = isset($_SERVER['HTTP_DEPTH']) && empty($_SERVER['HTTP_DEPTH']) ? 0 : 1;
+
+				if ($depth > 0) {
+					throw new WebDAV_Exception('Directory listing is not allowed for anonymous users', 403);
+				}
+			}
+
+			return parent::http_propfind($uri);
 		}
 
 		protected function requireAuth(): void
