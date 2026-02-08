@@ -632,7 +632,10 @@ namespace {
 	$relative_uri = ltrim(substr($uri, strlen($root)), '/');
 
 	if (!empty($_SERVER['SERVER_SOFTWARE']) && stristr($_SERVER['SERVER_SOFTWARE'], 'apache') && !file_exists($self_dir . '/.htaccess')) {
-		file_put_contents($self_dir . '/.htaccess', str_replace('index.php', basename($self), /*__HTACCESS__*/));
+		$content = /*__HTACCESS__*/;
+		$content = str_replace('index.php', basename($self), $content);
+		$content = str_replace('RewriteBase /', rtrim($root, '/') . '/', $content);
+		file_put_contents($self_dir . '/.htaccess', $content);
 	}
 
 	if ($relative_uri == '.webdav/webdav.js' || $relative_uri == '.webdav/webdav.css') {
