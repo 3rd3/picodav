@@ -19,7 +19,7 @@ namespace PicoDAV
 	use KD2\WebDAV\AbstractStorage;
 	use KD2\WebDAV\Exception as WebDAV_Exception;
 
-	class Storage extends AbstractStorageD
+	class Storage extends AbstractStorage
 	{
 		/**
 		 * These file names will be ignored when doing a PUT
